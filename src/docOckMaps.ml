@@ -583,8 +583,8 @@ class virtual ['a] type_decl = object (self)
   method virtual identifier_type :
     'a Identifier.datatype -> 'a Identifier.datatype
 
-  method virtual identifier_constructor :
-    'a Identifier.constructor -> 'a Identifier.constructor
+  method virtual identifier_variant_constructor :
+    'a Identifier.variant_constructor -> 'a Identifier.variant_constructor
 
   method virtual identifier_field :
     'a Identifier.field -> 'a Identifier.field
@@ -598,7 +598,7 @@ class virtual ['a] type_decl = object (self)
   method type_decl_constructor cstr =
     let open TypeDecl.Constructor in
     let {id; doc; args; res} = cstr in
-    let id' = self#identifier_constructor id in
+    let id' = self#identifier_variant_constructor id in
     let doc' = self#documentation doc in
     let args' = list_map self#type_expr args in
     let res' = option_map self#type_expr res in

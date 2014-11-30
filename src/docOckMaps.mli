@@ -231,8 +231,8 @@ class virtual ['a] type_decl : object
   method virtual identifier_type : 'a Identifier.datatype ->
     'a Identifier.datatype
 
-  method virtual identifier_constructor : 'a Identifier.constructor ->
-    'a Identifier.constructor
+  method virtual identifier_variant_constructor
+      : 'a Identifier.variant_constructor -> 'a Identifier.variant_constructor
 
   method virtual identifier_field : 'a Identifier.field -> 'a Identifier.field
 

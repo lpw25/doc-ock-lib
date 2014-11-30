@@ -159,7 +159,7 @@ module rec Path : sig
     val ident_class : 'a Identifier.class_ -> 'a class_
 
     val ident_class_type
-      : 'a Identifier.class_type -> 'a class_type
+      : 'a Identifier.class_type -> 'a class_signature
 
     val class_signature_of_class : 'a class_ -> 'a class_signature
 
@@ -204,7 +204,7 @@ module rec Path : sig
   val ident_class : 'a Identifier.class_ -> 'a class_
 
   val ident_class_type
-    : 'a Identifier.class_type -> 'a class_type
+    : 'a Identifier.class_type -> 'a class_signature
 
   val class_signature_of_class : 'a class_ -> 'a class_signature
 
@@ -382,7 +382,7 @@ module Reference : sig
 
     val ident_class : 'a Identifier.class_ -> 'a class_
 
-    val ident_class_type : 'a Identifier.class_type -> 'a class_type
+    val ident_class_type : 'a Identifier.class_type -> 'a class_signature
 
     val ident_method : 'a Identifier.method_ -> 'a method_
 
@@ -497,7 +497,7 @@ module Reference : sig
 
   val ident_class : 'a Identifier.class_ -> 'a class_
 
-  val ident_class_type : 'a Identifier.class_type -> 'a class_type
+  val ident_class_type : 'a Identifier.class_type -> 'a class_signature
 
   val ident_method : 'a Identifier.method_ -> 'a method_
 

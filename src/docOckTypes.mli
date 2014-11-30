@@ -171,7 +171,7 @@ and TypeDecl : sig
   module Constructor : sig
 
     type 'a t =
-      { id: 'a Identifier.constructor;
+      { id: 'a Identifier.variant_constructor;
         doc: 'a Documentation.t;
         args: 'a TypeExpr.t list;
         res: 'a TypeExpr.t option; }

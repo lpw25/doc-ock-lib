@@ -229,7 +229,7 @@ module Path = struct
 
     let ident_class (c: 'a Identifier.class_) = Identifier c
 
-    let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
+    let ident_class_type : 'a Identifier.class_type -> 'a class_signature = function
       | ClassType _ as ct -> Identifier ct
 
     let class_signature_of_class : 'a class_ -> 'a class_signature = function
@@ -286,7 +286,7 @@ module Path = struct
 
   let ident_class (c: 'a Identifier.class_) = Resolved (Identifier c)
 
-  let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
+  let ident_class_type : 'a Identifier.class_type -> 'a class_signature = function
     | ClassType _ as ct -> Resolved (Identifier ct)
 
   let class_signature_of_class : 'a class_ -> 'a class_signature = function
@@ -614,7 +614,7 @@ module Reference = struct
 
     let ident_class (c: 'a Identifier.class_) = Identifier c
 
-    let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
+    let ident_class_type : 'a Identifier.class_type -> 'a class_signature = function
       | ClassType _ as ct -> Identifier ct
 
     let ident_method (m : 'a Identifier.method_) = Identifier m
@@ -807,7 +807,7 @@ module Reference = struct
 
   let ident_class (c: 'a Identifier.class_) = Resolved (Identifier c)
 
-  let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
+  let ident_class_type : 'a Identifier.class_type -> 'a class_signature = function
     | ClassType _ as ct -> Resolved (Identifier ct)
 
   let ident_method (m : 'a Identifier.method_) = Resolved (Identifier m)
