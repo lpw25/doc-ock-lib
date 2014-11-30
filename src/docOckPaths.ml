@@ -111,6 +111,19 @@ module Identifier = struct
   let container_of_class_signature : 'a class_signature -> 'a container =
     function Class _ | ClassType _ as x -> x
 
+  let parent_of_signature : 'a signature -> 'a parent = function
+    | Root _ | Module _ | Argument _ | ModuleType _ as x -> x
+
+  let parent_of_datatype : 'a datatype -> 'a parent = function
+    | Type _ | CoreType _ as x -> x
+
+  let parent_of_class_signature : 'a class_signature -> 'a parent = function
+    | Class _ | ClassType _ as x -> x
+
+  let parent_of_container : 'a container -> 'a parent = function
+    | Root _ | Module _ | Argument _ | ModuleType _
+    | Class _ | ClassType _ as x -> x
+
   let any : type k. ('a, k) t -> 'a any = function
     | Root _ as x -> x
     | Module _ as x -> x
@@ -655,6 +668,13 @@ module Reference = struct
     let parent_of_datatype : 'a datatype -> 'a parent = function
       | Identifier (Type _ |CoreType _) | Type _ as x -> x
 
+    let parent_of_container : 'a container -> 'a parent = function
+      | Identifier
+          (Root _ | Argument _
+              | Module _ | ModuleType _
+              | Class _  | ClassType _)
+      | Module _ | ModuleType _ | Class _ | ClassType _ as x -> x
+
     let class_signature_of_class : 'a class_ -> 'a class_signature = function
       | Identifier (Class _) | Class _ as x -> x
 
@@ -853,6 +873,14 @@ module Reference = struct
 
   let parent_of_datatype : 'a datatype -> 'a parent = function
     | Resolved (Identifier (Type _ | CoreType _) | Type _)
+    | Root _ | Dot _ as x -> x
+
+  let parent_of_container : 'a container -> 'a parent = function
+    | Resolved (Identifier
+                  (Root _ | Argument _
+                      | Module _ | ModuleType _
+                      | Class _  | ClassType _)
+                   | Module _ | ModuleType _ | Class _ | ClassType _)
     | Root _ | Dot _ as x -> x
 
   let class_signature_of_class : 'a class_ -> 'a class_signature = function

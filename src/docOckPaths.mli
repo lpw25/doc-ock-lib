@@ -112,6 +112,14 @@ module Identifier : sig
 
   val container_of_class_signature : 'a class_signature -> 'a container
 
+  val parent_of_signature : 'a signature -> 'a parent
+
+  val parent_of_datatype : 'a datatype -> 'a parent
+
+  val parent_of_class_signature : 'a class_signature -> 'a parent
+
+  val parent_of_container : 'a container -> 'a parent
+
   val any : ('a, 'b) t -> 'a any
 
   val name : ('a, 'b) t -> string option
@@ -409,6 +417,8 @@ module Reference : sig
 
     val parent_of_datatype : 'a datatype -> 'a parent
 
+    val parent_of_container : 'a container -> 'a parent
+
     val class_signature_of_class : 'a class_ -> 'a class_signature
 
     val type_of_datatype : 'a datatype -> 'a type_
@@ -523,6 +533,8 @@ module Reference : sig
   val parent_of_class_signature : 'a class_signature -> 'a parent
 
   val parent_of_datatype : 'a datatype -> 'a parent
+
+  val parent_of_container : 'a container -> 'a parent
 
   val class_signature_of_class : 'a class_ -> 'a class_signature
 
