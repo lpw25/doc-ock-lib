@@ -28,9 +28,9 @@ val add_module_type : 'a signature -> Ident.t -> 'a t -> 'a t
 
 val add_type : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_constructor : 'a type_ -> Ident.t -> 'a t -> 'a t
+val add_constructor : 'a datatype -> Ident.t -> 'a t -> 'a t
 
-val add_field : 'a type_ -> Ident.t -> 'a t -> 'a t
+val add_field : 'a datatype -> Ident.t -> 'a t -> 'a t
 
 val add_extension : 'a signature -> Ident.t -> 'a t -> 'a t
 
@@ -61,7 +61,7 @@ module Path : sig
 
   val read_class : 'a t -> Path.t -> 'a DocOckPaths.Path.class_
 
-  val read_class_type : 'a t -> Path.t -> 'a DocOckPaths.Path.class_type
+  val read_class_signature : 'a t -> Path.t -> 'a DocOckPaths.Path.class_signature
 
 end
 
@@ -89,7 +89,7 @@ module Reference : sig
 
   val read_field : 'a t -> string -> 'a Reference.field
 
-  val read_extension : 'a t -> string -> 'a Reference.extension
+  val read_type_extension : 'a t -> string -> 'a Reference.type_extension
 
   val read_exception : 'a t -> string -> 'a Reference.exception_
 
@@ -97,7 +97,7 @@ module Reference : sig
 
   val read_class : 'a t -> string -> 'a Reference.class_
 
-  val read_class_type : 'a t -> string -> 'a Reference.class_type
+  val read_class_signature : 'a t -> string -> 'a Reference.class_signature
 
   val read_method : 'a t -> string -> 'a Reference.method_
 

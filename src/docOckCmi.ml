@@ -420,7 +420,7 @@ and read_object env fi nm =
       in
       Object {methods; open_}
   | Some (p, _ :: params) ->
-      let p = Env.Path.read_class_type env p in
+      let p = Env.Path.read_class_signature env p in
       let params = List.map (read_type_expr env) params in
       Class (p, params)
   | _ -> assert false
@@ -666,7 +666,7 @@ let rec read_class_signature env parent params =
       || List.exists aliasable params
       then read_class_signature env parent params cty
       else begin
-        let p = Env.Path.read_class_type env p in
+        let p = Env.Path.read_class_signature env p in
         let params = List.map (read_type_expr env) params in
           Constr(p, params)
       end

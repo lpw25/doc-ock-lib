@@ -39,11 +39,11 @@ module Documentation : sig
     | Type of 'a Reference.type_
     | Constructor of 'a Reference.constructor
     | Field of 'a Reference.field
-    | Extension of 'a Reference.extension
+    | Extension of 'a Reference.type_extension
     | Exception of 'a Reference.exception_
     | Value of 'a Reference.value
     | Class of 'a Reference.class_
-    | ClassType of 'a Reference.class_type
+    | ClassSignature of 'a Reference.class_signature
     | Method of 'a Reference.method_
     | InstanceVariable of 'a Reference.instance_variable
     | Element of 'a Reference.any
@@ -171,7 +171,7 @@ and TypeDecl : sig
   module Constructor : sig
 
     type 'a t =
-      { id: 'a Identifier.constructor;
+      { id: 'a Identifier.variant_constructor;
         doc: 'a Documentation.t;
         args: 'a TypeExpr.t list;
         res: 'a TypeExpr.t option; }
@@ -217,7 +217,7 @@ and TypeDecl : sig
   end
 
   type 'a t =
-    { id: 'a Identifier.type_;
+    { id: 'a Identifier.datatype;
       doc: 'a Documentation.t;
       equation: 'a Equation.t;
       representation: 'a Representation.t option; }
@@ -304,7 +304,7 @@ end
 and ClassType : sig
 
   type 'a expr =
-    | Constr of 'a Path.class_type * 'a TypeExpr.t list
+    | Constr of 'a Path.class_signature * 'a TypeExpr.t list
     | Signature of 'a ClassSignature.t
 
   type 'a t =
@@ -415,7 +415,7 @@ and TypeExpr : sig
     | Constr of 'a Path.type_ * 'a t list
     | Variant of 'a TypeExpr.Variant.t
     | Object of 'a TypeExpr.Object.t
-    | Class of 'a Path.class_type * 'a t list
+    | Class of 'a Path.class_signature * 'a t list
     | Poly of string list * 'a t
     | Package of 'a TypeExpr.Package.t
 

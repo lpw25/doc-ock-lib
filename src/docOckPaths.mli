@@ -16,16 +16,27 @@
 
 (** Paths of documentation *)
 
+(** {3 Path kinds} *)
+
+type signature_kind = [ `Module | `ModuleType ]
+type class_signature_kind = [ `Class | `ClassType ]
+type container_kind = [ signature_kind | class_signature_kind ]
+type type_kind = [ class_signature_kind | `Type ]
+type parent_kind = [ container_kind | `Type ]
+type type_extension_kind = [ `Extension | `Exception ]
+type constructor_kind = [ type_extension_kind | `Constructor ]
+
+type any_kind = [
+  | parent_kind | constructor_kind
+  | `Field | `Value | `Method | `InstanceVariable | `Label
+  ]
+
 (** {3 Identifiers} **)
 
 (** Identifiers for definitions *)
 module Identifier : sig
 
-  type kind =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType
-    | `Method | `InstanceVariable | `Label ]
+  type kind = any_kind
 
   type ('a, 'b) t =
     | Root : 'a -> ('a, [< kind > `Module]) t
@@ -34,8 +45,8 @@ module Identifier : sig
     | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
     | Type : 'a signature * string -> ('a, [< kind > `Type]) t
     | CoreType : string -> ('a, [< kind > `Type]) t
-    | Constructor : 'a type_ * string -> ('a, [< kind > `Constructor]) t
-    | Field : 'a type_ * string -> ('a, [< kind > `Field]) t
+    | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
+    | Field : 'a datatype * string -> ('a, [< kind > `Field]) t
     | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
     | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
     | CoreException : string -> ('a, [< kind > `Exception]) t
@@ -47,17 +58,19 @@ module Identifier : sig
                            ('a, [< kind > `InstanceVariable]) t
     | Label : 'a container * string -> ('a, [< kind > `Label]) t
 
-  and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
+  and 'a parent = ('a, parent_kind) t
 
-  and 'a signature = ('a, [`Module|`ModuleType]) t
+  and 'a container = ('a, container_kind) t
+
+  and 'a signature = ('a, signature_kind) t
 
   and 'a module_ = ('a, [`Module]) t
 
   and 'a module_type = ('a, [`ModuleType]) t
 
-  and 'a type_ =  ('a, [`Type]) t
+  and 'a datatype =  ('a, [`Type]) t
 
-  and 'a constructor = ('a, [`Constructor]) t
+  and 'a variant_constructor = ('a, [`Constructor]) t
 
   and 'a field = ('a, [`Field]) t
 
@@ -65,13 +78,19 @@ module Identifier : sig
 
   and 'a exception_ = ('a, [`Exception]) t
 
+  and 'a type_extension = ('a, type_extension_kind) t
+
+  and 'a constructor = ('a, constructor_kind) t
+
   and 'a value = ('a, [`Value]) t
 
   and 'a class_ = ('a, [`Class]) t
 
   and 'a class_type = ('a, [`ClassType]) t
 
-  and 'a class_signature = ('a, [`Class|`ClassType]) t
+  and 'a class_signature = ('a, class_signature_kind) t
+
+  and 'a type_ = ('a, type_kind) t
 
   and 'a method_ = ('a, [`Method]) t
 
@@ -93,6 +112,14 @@ module Identifier : sig
 
   val container_of_class_signature : 'a class_signature -> 'a container
 
+  val parent_of_signature : 'a signature -> 'a parent
+
+  val parent_of_datatype : 'a datatype -> 'a parent
+
+  val parent_of_class_signature : 'a class_signature -> 'a parent
+
+  val parent_of_container : 'a container -> 'a parent
+
   val any : ('a, 'b) t -> 'a any
 
   val name : ('a, 'b) t -> string option
@@ -106,7 +133,7 @@ module rec Path : sig
 
   module Resolved : sig
 
-    type kind = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
+    type kind = parent_kind
 
     type ('a, 'b) t =
       | Identifier : ('a, 'b) Identifier.t -> ('a, [< kind] as 'b) t
@@ -121,11 +148,13 @@ module rec Path : sig
 
     and 'a module_type = ('a, [`ModuleType]) t
 
-    and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
+    and 'a type_ = ('a, type_kind) t
 
     and 'a class_ = ('a, [`Class]) t
 
-    and 'a class_type = ('a, [`Class|`ClassType]) t
+    and 'a class_type = ('a, [`ClassType]) t
+
+    and 'a class_signature = ('a, class_signature_kind) t
 
     and 'a any = ('a, kind) t
 
@@ -133,17 +162,18 @@ module rec Path : sig
 
     val ident_module_type : 'a Identifier.module_type -> 'a module_type
 
-    val ident_type : 'a Identifier.type_ -> 'a type_
+    val ident_type : 'a Identifier.datatype -> 'a type_
 
     val ident_class : 'a Identifier.class_ -> 'a class_
 
-    val ident_class_type : 'a Identifier.class_type -> 'a class_type
+    val ident_class_type
+      : 'a Identifier.class_type -> 'a class_signature
 
-    val class_type_of_class : 'a class_ -> 'a class_type
+    val class_signature_of_class : 'a class_ -> 'a class_signature
 
     val type_of_class : 'a class_ -> 'a type_
 
-    val type_of_class_type : 'a class_type -> 'a type_
+    val type_of_class_signature : 'a class_signature -> 'a type_
 
     val any : ('a, 'b) t -> 'a any
 
@@ -151,7 +181,7 @@ module rec Path : sig
 
   end
 
-  type kind = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
+  type kind = Resolved.kind
 
   type ('a, 'b) t =
     | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
@@ -163,11 +193,13 @@ module rec Path : sig
 
   and 'a module_type = ('a, [`ModuleType]) t
 
-  and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
+  and 'a type_ = ('a, type_kind) t
 
   and 'a class_ = ('a, [`Class]) t
 
-  and 'a class_type = ('a, [`Class|`ClassType]) t
+  and 'a class_type = ('a, [`ClassType]) t
+
+  and 'a class_signature = ('a, class_signature_kind) t
 
   and 'a any = ('a, kind) t
 
@@ -175,17 +207,18 @@ module rec Path : sig
 
   val ident_module_type : 'a Identifier.module_type -> 'a module_type
 
-  val ident_type : 'a Identifier.type_ -> 'a type_
+  val ident_type : 'a Identifier.datatype -> 'a type_
 
   val ident_class : 'a Identifier.class_ -> 'a class_
 
-  val ident_class_type : 'a Identifier.class_type -> 'a class_type
+  val ident_class_type
+    : 'a Identifier.class_type -> 'a class_signature
 
-  val class_type_of_class : 'a class_ -> 'a class_type
+  val class_signature_of_class : 'a class_ -> 'a class_signature
 
   val type_of_class : 'a class_ -> 'a type_
 
-  val type_of_class_type : 'a class_type -> 'a type_
+  val type_of_class_signature : 'a class_signature -> 'a type_
 
   val any : ('a, 'b) t -> 'a any
 
@@ -210,7 +243,7 @@ module Fragment : sig
 
   module Resolved : sig
 
-    type kind = [ `Module | `Type | `Class | `ClassType ]
+    type kind = [ type_kind | `Module ]
 
     type sort = [ `Root | `Branch ]
 
@@ -227,7 +260,7 @@ module Fragment : sig
 
     and module_ = [`Module] t
 
-    and type_ = [`Type|`Class|`ClassType] t
+    and type_ = type_kind t
 
     and any = kind t
 
@@ -244,7 +277,7 @@ module Fragment : sig
 
   end
 
-  type kind = [ `Module | `Type | `Class | `ClassType ]
+  type kind = Resolved.kind
 
   type sort = [ `Root | `Branch ]
 
@@ -258,7 +291,7 @@ module Fragment : sig
 
   and module_ = [`Module] t
 
-  and type_ = [`Type|`Class|`ClassType] t
+  and type_ = type_kind t
 
   and any = kind t
 
@@ -280,11 +313,7 @@ module Reference : sig
 
   module Resolved : sig
 
-    type kind =
-      [ `Module | `ModuleType | `Type
-      | `Constructor | `Field | `Extension
-      | `Exception | `Value | `Class | `ClassType
-      | `Method | `InstanceVariable | `Label ]
+    type kind = any_kind
 
     type ('a, 'b) t =
       | Identifier : ('a, 'b) Identifier.t -> ('a, 'b) t
@@ -303,25 +332,25 @@ module Reference : sig
                              ('a, [< kind > `InstanceVariable]) t
       | Label : 'a container * string -> ('a, [< kind > `Label]) t
 
-    and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
+    and 'a parent = ('a, parent_kind) t
 
-    and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
+    and 'a container = ('a, container_kind) t
 
     and 'a module_ = ('a, [`Module]) t
 
     and 'a module_type = ('a, [`ModuleType]) t
 
-    and 'a signature = ('a, [`Module|`ModuleType]) t
+    and 'a signature = ('a, signature_kind) t
 
-    and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
+    and 'a type_ = ('a, type_kind) t
 
     and 'a datatype = ('a, [`Type]) t
 
-    and 'a constructor = ('a, [`Constructor|`Extension|`Exception]) t
+    and 'a constructor = ('a, constructor_kind) t
 
     and 'a field = ('a, [`Field]) t
 
-    and 'a extension = ('a, [`Extension|`Exception]) t
+    and 'a type_extension = ('a, type_extension_kind) t
 
     and 'a exception_ = ('a, [`Exception]) t
 
@@ -329,9 +358,9 @@ module Reference : sig
 
     and 'a class_ = ('a, [`Class]) t
 
-    and 'a class_type = ('a, [`Class|`ClassType]) t
+    and 'a class_type = ('a, [`ClassType]) t
 
-    and 'a class_signature = ('a, [`Class|`ClassType]) t
+    and 'a class_signature = ('a, class_signature_kind) t
 
     and 'a method_ = ('a, [`Method]) t
 
@@ -345,15 +374,15 @@ module Reference : sig
 
     val ident_module_type : 'a Identifier.module_type -> 'a module_type
 
-    val ident_type : 'a Identifier.type_ -> 'a type_
+    val ident_type : 'a Identifier.datatype -> 'a type_
 
-    val ident_datatype : 'a Identifier.type_ -> 'a datatype
+    val ident_datatype : 'a Identifier.datatype -> 'a datatype
 
-    val ident_constructor : 'a Identifier.constructor -> 'a constructor
+    val ident_constructor : 'a Identifier.variant_constructor -> 'a constructor
 
     val ident_field : 'a Identifier.field -> 'a field
 
-    val ident_extension : 'a Identifier.extension -> 'a extension
+    val ident_extension : 'a Identifier.extension -> 'a type_extension
 
     val ident_exception : 'a Identifier.exception_ -> 'a exception_
 
@@ -361,7 +390,7 @@ module Reference : sig
 
     val ident_class : 'a Identifier.class_ -> 'a class_
 
-    val ident_class_type : 'a Identifier.class_type -> 'a class_type
+    val ident_class_type : 'a Identifier.class_type -> 'a class_signature
 
     val ident_method : 'a Identifier.method_ -> 'a method_
 
@@ -388,7 +417,9 @@ module Reference : sig
 
     val parent_of_datatype : 'a datatype -> 'a parent
 
-    val class_type_of_class : 'a class_ -> 'a class_type
+    val parent_of_container : 'a container -> 'a parent
+
+    val class_signature_of_class : 'a class_ -> 'a class_signature
 
     val type_of_datatype : 'a datatype -> 'a type_
 
@@ -396,9 +427,11 @@ module Reference : sig
 
     val type_of_class_type : 'a class_type -> 'a type_
 
-    val extension_of_exception : 'a exception_ -> 'a extension
+    val type_of_class_signature : 'a class_signature -> 'a type_
 
-    val constructor_of_extension : 'a extension -> 'a constructor
+    val type_extension_of_exception : 'a exception_ -> 'a type_extension
+
+    val constructor_of_type_extension : 'a type_extension -> 'a constructor
 
     val constructor_of_exception : 'a exception_ -> 'a constructor
 
@@ -408,36 +441,32 @@ module Reference : sig
 
   end
 
-  type kind =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType
-    | `Method | `InstanceVariable | `Label ]
+  type kind = Resolved.kind
 
   type ('a, 'b) t =
     | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
     | Root : string -> ('a, [< kind]) t
     | Dot : 'a parent * string -> ('a, [< kind]) t
 
-  and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
+  and 'a parent = ('a, parent_kind) t
 
-  and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
+  and 'a container = ('a, container_kind) t
 
   and 'a module_ = ('a, [`Module]) t
 
   and 'a module_type = ('a, [`ModuleType]) t
 
-  and 'a signature = ('a, [`Module|`ModuleType]) t
+  and 'a signature = ('a, signature_kind) t
 
-  and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
+  and 'a type_ = ('a, type_kind) t
 
   and 'a datatype = ('a, [`Type]) t
 
-  and 'a constructor = ('a, [`Constructor|`Extension|`Exception]) t
+  and 'a constructor = ('a, constructor_kind) t
 
   and 'a field = ('a, [`Field]) t
 
-  and 'a extension = ('a, [`Extension|`Exception]) t
+  and 'a type_extension = ('a, type_extension_kind) t
 
   and 'a exception_ = ('a, [`Exception]) t
 
@@ -445,9 +474,9 @@ module Reference : sig
 
   and 'a class_ = ('a, [`Class]) t
 
-  and 'a class_type = ('a, [`Class|`ClassType]) t
+  and 'a class_type = ('a, [`ClassType]) t
 
-  and 'a class_signature = ('a, [`Class|`ClassType]) t
+  and 'a class_signature = ('a, class_signature_kind) t
 
   and 'a method_ = ('a, [`Method]) t
 
@@ -462,15 +491,15 @@ module Reference : sig
 
   val ident_module_type : 'a Identifier.module_type -> 'a module_type
 
-  val ident_type : 'a Identifier.type_ -> 'a type_
+  val ident_type : 'a Identifier.datatype -> 'a type_
 
-  val ident_datatype : 'a Identifier.type_ -> 'a datatype
+  val ident_datatype : 'a Identifier.datatype -> 'a datatype
 
-  val ident_constructor : 'a Identifier.constructor -> 'a constructor
+  val ident_constructor : 'a Identifier.variant_constructor -> 'a constructor
 
   val ident_field : 'a Identifier.field -> 'a field
 
-  val ident_extension : 'a Identifier.extension -> 'a extension
+  val ident_extension : 'a Identifier.extension -> 'a type_extension
 
   val ident_exception : 'a Identifier.exception_ -> 'a exception_
 
@@ -478,7 +507,7 @@ module Reference : sig
 
   val ident_class : 'a Identifier.class_ -> 'a class_
 
-  val ident_class_type : 'a Identifier.class_type -> 'a class_type
+  val ident_class_type : 'a Identifier.class_type -> 'a class_signature
 
   val ident_method : 'a Identifier.method_ -> 'a method_
 
@@ -505,7 +534,9 @@ module Reference : sig
 
   val parent_of_datatype : 'a datatype -> 'a parent
 
-  val class_type_of_class : 'a class_ -> 'a class_type
+  val parent_of_container : 'a container -> 'a parent
+
+  val class_signature_of_class : 'a class_ -> 'a class_signature
 
   val type_of_datatype : 'a datatype -> 'a type_
 
@@ -513,9 +544,9 @@ module Reference : sig
 
   val type_of_class_type : 'a class_type -> 'a type_
 
-  val extension_of_exception : 'a exception_ -> 'a extension
+  val type_extension_of_exception : 'a exception_ -> 'a type_extension
 
-  val constructor_of_extension : 'a extension -> 'a constructor
+  val constructor_of_type_extension : 'a type_extension -> 'a constructor
 
   val constructor_of_exception : 'a exception_ -> 'a constructor
 
