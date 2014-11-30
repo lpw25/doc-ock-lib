@@ -18,31 +18,21 @@ open DocOckPaths.Identifier
 
 module StringTbl = Map.Make(String)
 
-type 'a type_ident = ('a, [`Type|`Class|`ClassType]) t
-
-type 'a constructor_ident =  ('a, [`Constructor|`Extension|`Exception]) t
-
-type 'a extension_ident =  ('a, [`Extension|`Exception]) t
-
-type 'a class_type_ident = ('a, [`Class|`ClassType]) t
-
-type 'a parent_ident = ('a, [`Module|`ModuleType|`Type|`Class|`ClassType]) t
-
 type 'a t =
   { modules : 'a module_ Ident.tbl;
     module_types : 'a module_type Ident.tbl;
-    types : 'a type_ident Ident.tbl;
-    constructors : 'a constructor_ident Ident.tbl;
+    types : 'a type_ Ident.tbl;
+    constructors : 'a constructor Ident.tbl;
     fields : 'a field Ident.tbl;
-    extensions : 'a extension_ident Ident.tbl;
+    type_extensions : 'a type_extension Ident.tbl;
     exceptions : 'a exception_ Ident.tbl;
     values : 'a value Ident.tbl;
     classes : 'a class_ Ident.tbl;
-    class_types : 'a class_type_ident Ident.tbl;
+    class_signatures : 'a class_signature Ident.tbl;
     methods : 'a method_ StringTbl.t;
     instance_variables : 'a instance_variable StringTbl.t;
     labels : 'a label StringTbl.t;
-    parents : 'a parent_ident StringTbl.t;
+    parents : 'a parent StringTbl.t;
     elements : 'a any StringTbl.t; }
 
 let empty =
@@ -51,11 +41,11 @@ let empty =
     types = Ident.empty;
     constructors = Ident.empty;
     fields = Ident.empty;
-    extensions = Ident.empty;
+    type_extensions = Ident.empty;
     exceptions = Ident.empty;
     values = Ident.empty;
     classes = Ident.empty;
-    class_types = Ident.empty;
+    class_signatures = Ident.empty;
     methods = StringTbl.empty;
     instance_variables = StringTbl.empty;
     labels = StringTbl.empty;
@@ -113,14 +103,14 @@ let add_extension parent id env =
   let identifier = Extension(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              constructors = Ident.add id identifier env.constructors;
-             extensions = Ident.add id identifier env.extensions }
+             type_extensions = Ident.add id identifier env.type_extensions }
 
 let add_exception parent id env =
   let name = Ident.name id in
   let identifier = Exception(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              constructors = Ident.add id identifier env.constructors;
-             extensions = Ident.add id identifier env.extensions;
+             type_extensions = Ident.add id identifier env.type_extensions;
              exceptions = Ident.add id identifier env.exceptions }
 
 let add_class parent id ty_id obj_id cl_id env =
@@ -135,7 +125,7 @@ let add_class parent id ty_id obj_id cl_id env =
   { env with elements = StringTbl.add name identifier env.elements;
              parents = StringTbl.add name identifier env.parents;
              types = add_idents env.types;
-             class_types = add_idents env.class_types;
+             class_signatures = add_idents env.class_signatures;
              classes = add_idents env.classes }
 
 let add_class_type parent id obj_id cl_id env =
@@ -150,7 +140,7 @@ let add_class_type parent id obj_id cl_id env =
   { env with elements = StringTbl.add name identifier env.elements;
              parents = StringTbl.add name identifier env.parents;
              types = add_idents env.types;
-             class_types = add_idents env.class_types }
+             class_signatures = add_idents env.class_signatures }
 
 let add_method parent name env =
   let identifier = Method(parent, name) in
@@ -179,7 +169,7 @@ let add_core_exception id env =
   let identifier = CoreException name in
   { env with elements = StringTbl.add name identifier env.elements;
              constructors = Ident.add id identifier env.constructors;
-             extensions = Ident.add id identifier env.extensions;
+             type_extensions = Ident.add id identifier env.type_extensions;
              exceptions = Ident.add id identifier env.exceptions }
 
 let is_core_type = function
@@ -246,8 +236,8 @@ let find_type env id =
 let find_class env id =
   Ident.find_same id env.classes
 
-let find_class_type env id =
-  Ident.find_same id env.class_types
+let find_class_signature env id =
+  Ident.find_same id env.class_signatures
 
 
 let lookup_module env name =
@@ -276,9 +266,9 @@ let lookup_constructor env name =
 let lookup_field env name =
   Ident.find_name name env.fields
 
-let lookup_extension env name =
+let lookup_type_extension env name =
   try
-    Ident.find_name name env.extensions
+    Ident.find_name name env.type_extensions
   with Not_found ->
     if is_core_exception name then CoreException name
     else raise Not_found
@@ -296,8 +286,8 @@ let lookup_value env name =
 let lookup_class env name =
   Ident.find_name name env.classes
 
-let lookup_class_type env name =
-  Ident.find_name name env.class_types
+let lookup_class_signature env name =
+  Ident.find_name name env.class_signatures
 
 let lookup_method env name =
   StringTbl.find name env.methods
@@ -354,9 +344,9 @@ module Path = struct
       Resolved (Identifier (find_class env id))
     with Not_found -> assert false
 
-  let read_class_type_ident env id : 'a class_type =
+  let read_class_signature_ident env id : 'a class_signature =
     try
-      Resolved (Identifier (find_class_type env id))
+      Resolved (Identifier (find_class_signature env id))
     with Not_found -> assert false
 
   let rec read_module env = function
@@ -374,8 +364,8 @@ module Path = struct
     | Path.Pdot(p, s, _) -> Dot(read_module env p, s)
     | Path.Papply(p, arg)-> assert false
 
-  let read_class_type env = function
-    | Path.Pident id -> read_class_type_ident env id
+  let read_class_signature env = function
+    | Path.Pident id -> read_class_signature_ident env id
     | Path.Pdot(p, s, _) -> Dot(read_module env p, s)
     | Path.Papply(p, arg)-> assert false
 
@@ -434,9 +424,9 @@ module Reference = struct
       Resolved (Identifier (lookup_field env name))
     with Not_found -> Root name
 
-  let read_extension_ident env name =
+  let read_type_extension_ident env name =
     try
-      Resolved (Identifier (lookup_extension env name))
+      Resolved (Identifier (lookup_type_extension env name))
     with Not_found -> Root name
 
   let read_exception_ident env name =
@@ -454,9 +444,9 @@ module Reference = struct
       Resolved (Identifier (lookup_class env name))
     with Not_found -> Root name
 
-  let read_class_type_ident env name =
+  let read_class_signature_ident env name =
     try
-      Resolved (Identifier (lookup_class_type env name))
+      Resolved (Identifier (lookup_class_signature env name))
     with Not_found -> Root name
 
   let read_method_ident env name =
@@ -519,9 +509,9 @@ module Reference = struct
     | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 
-  let read_extension env s =
+  let read_type_extension env s =
     match Longident.parse s with
-    | Longident.Lident s -> read_extension_ident env s
+    | Longident.Lident s -> read_type_extension_ident env s
     | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 
@@ -543,9 +533,9 @@ module Reference = struct
     | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 
-  let read_class_type env s =
+  let read_class_signature env s =
     match Longident.parse s with
-    | Longident.Lident s -> read_class_type_ident env s
+    | Longident.Lident s -> read_class_signature_ident env s
     | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 

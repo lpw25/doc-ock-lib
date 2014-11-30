@@ -67,7 +67,7 @@ let rec read_core_type env ctyp =
         in
           Object {methods; open_ = (closed = Asttypes.Open)}
     | Ttyp_class(p, _, params) ->
-        let p = Env.Path.read_class_type env p in
+        let p = Env.Path.read_class_signature env p in
         let params = List.map (read_core_type env) params in
           Class(p, params)
     | Ttyp_alias(typ, var) ->
@@ -365,7 +365,7 @@ and read_class_signature env parent cltyp =
   let open ClassType in
     match cltyp.cltyp_desc with
     | Tcty_constr(p, _, params) ->
-        let p = Env.Path.read_class_type env p in
+        let p = Env.Path.read_class_signature env p in
         let params = List.map (read_core_type env) params in
           Constr(p, params)
     | Tcty_signature csig ->

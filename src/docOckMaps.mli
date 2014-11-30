@@ -18,8 +18,8 @@ class virtual ['a] documentation : object
 
   method virtual reference_field : 'a Reference.field -> 'a Reference.field
 
-  method virtual reference_extension : 'a Reference.extension ->
-    'a Reference.extension
+  method virtual reference_extension : 'a Reference.type_extension ->
+    'a Reference.type_extension
 
   method virtual reference_exception : 'a Reference.exception_ ->
     'a Reference.exception_
@@ -28,8 +28,8 @@ class virtual ['a] documentation : object
 
   method virtual reference_class : 'a Reference.class_ -> 'a Reference.class_
 
-  method virtual reference_class_type : 'a Reference.class_type ->
-    'a Reference.class_type
+  method virtual reference_class_signature : 'a Reference.class_signature ->
+    'a Reference.class_signature
 
   method virtual reference_method : 'a Reference.method_ ->
     'a Reference.method_
@@ -228,7 +228,8 @@ end
 
 class virtual ['a] type_decl : object
 
-  method virtual identifier_type : 'a Identifier.type_ -> 'a Identifier.type_
+  method virtual identifier_type : 'a Identifier.datatype ->
+    'a Identifier.datatype
 
   method virtual identifier_constructor : 'a Identifier.constructor ->
     'a Identifier.constructor
@@ -354,7 +355,7 @@ class virtual ['a] class_type : object
   method virtual identifier_class_type : 'a Identifier.class_type ->
     'a Identifier.class_type
 
-  method virtual path_class_type : 'a Path.class_type -> 'a Path.class_type
+  method virtual path_class_signature : 'a Path.class_signature -> 'a Path.class_signature
 
   method virtual documentation : 'a Documentation.t -> 'a Documentation.t
 
@@ -433,7 +434,8 @@ class virtual ['a] type_expr : object
 
   method virtual path_type : 'a Path.type_ -> 'a Path.type_
 
-  method virtual path_class_type : 'a Path.class_type -> 'a Path.class_type
+  method virtual path_class_signature : 'a Path.class_signature ->
+    'a Path.class_signature
 
   method virtual fragment_type : Fragment.type_ -> Fragment.type_
 

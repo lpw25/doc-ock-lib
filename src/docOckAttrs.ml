@@ -107,7 +107,7 @@ let read_element_reference env s : 'a reference =
   | Resolved(Class _ | Identifier (Class _)) as x ->
       Class x
   | Resolved(ClassType _ | Identifier (ClassType _)) as x ->
-      ClassType x
+      ClassSignature x
   | Resolved(Method _ | Identifier (Method _)) as x ->
       Method x
   | Resolved(InstanceVariable _ | Identifier (InstanceVariable _)) as x ->
@@ -135,7 +135,7 @@ let read_reference env rk s =
   | RK_class ->
       Class (Env.Reference.read_class env s)
   | RK_class_type ->
-      ClassType (Env.Reference.read_class_type env s)
+      ClassSignature (Env.Reference.read_class_signature env s)
   | RK_attribute ->
       InstanceVariable (Env.Reference.read_instance_variable env s)
   | RK_method ->

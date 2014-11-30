@@ -42,7 +42,7 @@ class virtual ['a] documentation = object (self)
     'a Reference.field -> 'a Reference.field
 
   method virtual reference_extension :
-    'a Reference.extension -> 'a Reference.extension
+    'a Reference.type_extension -> 'a Reference.type_extension
 
   method virtual reference_exception :
     'a Reference.exception_ -> 'a Reference.exception_
@@ -53,8 +53,8 @@ class virtual ['a] documentation = object (self)
   method virtual reference_class :
     'a Reference.class_ -> 'a Reference.class_
 
-  method virtual reference_class_type :
-    'a Reference.class_type -> 'a Reference.class_type
+  method virtual reference_class_signature :
+    'a Reference.class_signature -> 'a Reference.class_signature
 
   method virtual reference_method :
     'a Reference.method_ -> 'a Reference.method_
@@ -120,9 +120,9 @@ class virtual ['a] documentation = object (self)
           let rf' = self#reference_class rf in
             if rf != rf' then Class rf'
             else drf
-      | ClassType rf ->
-          let rf' = self#reference_class_type rf in
-            if rf != rf' then ClassType rf'
+      | ClassSignature rf ->
+          let rf' = self#reference_class_signature rf in
+            if rf != rf' then ClassSignature rf'
             else drf
       | Method rf ->
           let rf' = self#reference_method rf in
@@ -581,7 +581,7 @@ end
 class virtual ['a] type_decl = object (self)
 
   method virtual identifier_type :
-    'a Identifier.type_ -> 'a Identifier.type_
+    'a Identifier.datatype -> 'a Identifier.datatype
 
   method virtual identifier_constructor :
     'a Identifier.constructor -> 'a Identifier.constructor
@@ -872,8 +872,8 @@ class virtual ['a] class_type = object (self)
   method virtual identifier_class_type :
     'a Identifier.class_type -> 'a Identifier.class_type
 
-  method virtual path_class_type :
-    'a Path.class_type -> 'a Path.class_type
+  method virtual path_class_signature :
+    'a Path.class_signature -> 'a Path.class_signature
 
   method virtual documentation :
     'a Documentation.t -> 'a Documentation.t
@@ -891,7 +891,7 @@ class virtual ['a] class_type = object (self)
     let open ClassType in
       match expr with
       | Constr(p, params) ->
-          let p' = self#path_class_type p in
+          let p' = self#path_class_signature p in
           let params' = list_map self#type_expr params in
             if p != p' || params != params' then Constr(p', params')
             else expr
@@ -1044,8 +1044,8 @@ class virtual ['a] type_expr = object (self)
   method virtual path_type :
     'a Path.type_ -> 'a Path.type_
 
-  method virtual path_class_type :
-    'a Path.class_type -> 'a Path.class_type
+  method virtual path_class_signature :
+    'a Path.class_signature -> 'a Path.class_signature
 
   method virtual fragment_type :
     Fragment.type_ -> Fragment.type_
@@ -1169,7 +1169,7 @@ class virtual ['a] type_expr = object (self)
             if obj != obj' then Object obj'
             else typ
       | Class(p, params) ->
-          let p' = self#path_class_type p in
+          let p' = self#path_class_signature p in
           let params' = list_map self#type_expr params in
             if p != p' || params != params' then Class(p', params')
             else typ
